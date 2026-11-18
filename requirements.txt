@@ -1,0 +1,4 @@
+# Optional dependencies for FastAPI/Uvicorn mode (System also runs zero-dependency with Python standard library!)
+# Everything works out-of-the-box using `python3 app.py` without installing external packages.
+python-dotenv>=1.0.0
+requests>=2.31.0

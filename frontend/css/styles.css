@@ -1,0 +1,1044 @@
+:root {
+  --bg-page: #f4f7f9;
+  --bg-card: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-highlight: #eff6ff;
+  --text-main: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --primary-light: #e0f2fe;
+  --accent: #ea580c;
+  --accent-light: #ffedd5;
+  --success: #059669;
+  --success-light: #d1fae5;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.14);
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* 頂部導覽列 */
+.topbar {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0284c7, #0d9488);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.brand-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brand-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.live-clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.clock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+}
+
+/* 按鈕樣式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.16s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-outline {
+  background: #fff;
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+.btn-outline:hover {
+  background: var(--bg-subtle);
+  border-color: #cbd5e1;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+}
+
+.btn-icon {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.btn-icon:hover {
+  background: #e2e8f0;
+}
+
+/* 儀表板主要版面配置：上方全寬氣象區，下方左右雙欄 */
+.dashboard-layout {
+  padding-top: 22px;
+  padding-bottom: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.widget-grid-bottom {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.widget-slot-extensions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+/* 卡片共用樣式 */
+.widget-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.widget-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.widget-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.widget-icon {
+  font-size: 1.4rem;
+}
+
+.widget-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.widget-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.widget-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.widget-body {
+  padding: 20px 22px;
+}
+
+.widget-footer {
+  padding: 10px 22px;
+  background: var(--bg-subtle);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 標籤 Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-info {
+  background: var(--primary-light);
+  color: var(--primary-hover);
+}
+
+.badge-accent {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.badge-success {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.badge-warning {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+/* ==========================================
+   模組 1：中央氣象署 (CWA) 天氣預報樣式
+   ========================================== */
+.weather-top-grid {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.weather-current-box {
+  background: linear-gradient(135deg, #0284c7 0%, #0f766e 100%);
+  color: #fff;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.weather-loc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.weather-main-temp {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.weather-big-icon {
+  font-size: 3.1rem;
+  line-height: 1;
+}
+
+.weather-big-deg {
+  font-size: 2.7rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.weather-cond-text {
+  font-size: 0.95rem;
+  opacity: 0.92;
+  margin-top: 4px;
+}
+
+.weather-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.16);
+  padding: 11px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.weather-metric-item span {
+  display: block;
+  opacity: 0.78;
+  font-size: 0.73rem;
+}
+
+.weather-metric-item strong {
+  font-size: 0.88rem;
+}
+
+.weather-tabs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tab-group {
+  display: inline-flex;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 3px;
+  border-radius: 10px;
+  gap: 3px;
+}
+
+.tab-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 13px;
+  border-radius: 7px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab-btn.active {
+  background: #fff;
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 逐時預報橫向捲軸 */
+.hourly-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.hourly-item {
+  min-width: 106px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+  padding: 11px 10px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.hourly-item:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.hourly-date-tag {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.hourly-time {
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+
+.hourly-icon {
+  font-size: 1.55rem;
+  margin: 4px 0;
+}
+
+.hourly-temp {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.hourly-rain {
+  font-size: 0.75rem;
+  color: var(--primary);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.hourly-wind {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* 每週 7 天預報網格 */
+.weekly-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.weekly-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.weekly-day {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.weekly-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.weekly-icon {
+  font-size: 1.7rem;
+  margin: 6px 0;
+}
+
+.weekly-temps {
+  font-weight: 800;
+  font-size: 0.95rem;
+  margin: 4px 0;
+}
+
+.weekly-temps .low {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.weekly-meta {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ==========================================
+   模組 2：住家周邊外食三選一樣式
+   ========================================== */
+.dining-schedule-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 9px 13px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dining-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.place-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 15px 16px;
+  background: #fff;
+  transition: all 0.16s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.place-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.place-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.place-rank-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--primary-light);
+  color: var(--primary-hover);
+  font-weight: 800;
+  font-size: 0.8rem;
+  margin-right: 6px;
+}
+
+.place-name {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.place-category {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.place-rating-badge {
+  background: #fef3c7;
+  color: #b45309;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 4px 9px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.place-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.81rem;
+  color: var(--text-secondary);
+}
+
+.place-status-open {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.place-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-color);
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.place-address {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   模組 3：每兩小時自煮正餐推薦與歷史紀錄樣式
+   ========================================== */
+.recipes-Grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recipe-item-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.recipe-item-card:hover {
+  border-color: var(--accent);
+  background: #fffaf5;
+  transform: translateX(3px);
+}
+
+.recipe-item-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.recipe-index-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.recipe-item-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.recipe-item-sub {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.recipe-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 7px;
+}
+
+.recipe-tag {
+  font-size: 0.73rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.recipe-item-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* 今日歷史紀錄時間軸 */
+.history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.timeline-batch {
+  border-left: 3px solid var(--primary);
+  padding-left: 14px;
+  position: relative;
+}
+
+.timeline-batch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.timeline-slot-badge {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.timeline-recipes-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+}
+
+.timeline-recipe-chip {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  padding: 9px 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.timeline-recipe-chip:hover {
+  border-color: var(--accent);
+  background: #fff7ed;
+}
+
+/* 食譜詳細彈出視窗 Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.modal-card.modal-lg {
+  max-width: 760px;
+}
+
+.modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.modal-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.recipe-detail-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.recipe-detail-summary div span {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.recipe-detail-summary div strong {
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.recipe-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.recipe-list-box {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.recipe-list-box h4 {
+  font-size: 0.92rem;
+  margin-bottom: 10px;
+  color: var(--primary-hover);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ing-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border-color);
+  font-size: 0.86rem;
+}
+
+.ing-row:last-child {
+  border-bottom: none;
+}
+
+.ing-amount {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.steps-box {
+  margin-bottom: 16px;
+}
+
+.steps-box h4 {
+  font-size: 0.96rem;
+  margin-bottom: 10px;
+}
+
+.step-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.fire-tips-box {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-left: 4px solid var(--accent);
+  padding: 13px 16px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: #9a3412;
+}
+
+/* 表單樣式 */
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--text-secondary);
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+.form-hint-box {
+  background: var(--bg-highlight);
+  border: 1px solid #bae6fd;
+  padding: 10px 13px;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  color: #0369a1;
+  margin-bottom: 14px;
+}
+
+/* 通知 Toast */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  background: #0f172a;
+  color: #fff;
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  box-shadow: var(--shadow-lg);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 響應式設計 (RWD) */
+@media (max-width: 1060px) {
+  .weather-top-grid {
+    grid-template-columns: 1fr;
+  }
+  .widget-grid-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .recipe-two-cols,
+  .form-row-2,
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+  .recipe-detail-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+  .recipe-item-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .recipe-item-right {
+    width: 100%;
+    text-align: left;
+  }
+}

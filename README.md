@@ -1,1 +1,79 @@
-# kent_no_playground
+# 🌿 個人每日生活與飲食儀表板 (Personal Daily Life & Meal Dashboard)
+
+採用**模組化（Widget / Plugin 架構）**設計的全端個人生活與三餐決策儀表板，將「**中央氣象署 (CWA) 天氣預報**」、「**住家周邊外食三選一 (Google Maps)**」、「**每兩小時自煮正餐推薦與歷史紀錄**」拆分為獨立的後端服務模組與前端 UI 卡片元件，並使用輕量級 **SQLite** 資料庫搭配背景 **Cron Job 排程器**，實現定時自動更新與隔日歷史自動清理。
+
+---
+
+## 一、 專案目錄結構
+
+```text
+personal-daily-dashboard/
+├── app.py                              # 主程式入口（RESTful API 伺服器 + 靜態資源服務 + 排程啟動）
+├── .env.example                        # 外部 API 金鑰與預設座標設定範本
+├── requirements.txt                    # Python 套件清單（支援零第三方依賴標準庫直接啟動）
+├── data/
+│   └── dashboard.db                    # SQLite 資料庫（啟動後自動建立，儲存偏好設定、快取與當日歷史）
+├── backend/
+│   ├── core/
+│   │   ├── config.py                   # .env 環境變數載入與全域設定
+│   │   ├── database.py                 # SQLite 資料表初始化、設定存取與隔日自動清理邏輯
+│   │   ├── module_registry.py          # 後端模組註冊器（BaseModule & ModuleRegistry 插件介面）
+│   │   └── scheduler.py                # 背景 Cron Job 排程器（每分鐘檢查並觸發各模組定時任務）
+│   └── modules/
+│       ├── weather/
+│       │   └── service.py              # 模組 1：中央氣象署 CWA 逐時 (24-48hr) 與每週 (7天) 預報服務
+│       ├── dining/
+│       │   └── service.py              # 模組 2：Google Maps 住家周邊 4.0★+ 營業中餐廳三選一服務
+│       └── recipes/
+│           └── service.py              # 模組 3：每 2 小時自煮家常正餐 5 道推薦、2人份詳細食譜與當日歷史服務
+└── frontend/
+    ├── index.html                      # 響應式儀表板主頁面（上方氣象區、左下外食推薦、右下自煮與歷史切換）
+    ├── css/
+    │   └── styles.css                  # 現代化 RWD 樣式表（支援桌面與手機瀏覽）
+    └── js/
+        ├── main.js                     # 前端主控制器、設定視窗與模組管理介面
+        ├── core/
+        │   └── widgetRegistry.js       # 前端 UI Widget 插件註冊器（支援動態掛載與未來擴充）
+        └── widgets/
+            ├── weatherWidget.js        # 模組 1 前端卡片元件
+            ├── diningWidget.js         # 模組 2 前端卡片元件
+            └── recipesWidget.js        # 模組 3 前端卡片元件（含詳細食譜 Modal 與歷史時間軸）
+```
+
+---
+
+## 二、 快速安裝與啟動步驟
+
+本專案經過特別設計，**僅需 Python 3 標準庫即可零依賴直接啟動**（無須額外編譯步驟），且在未填入外部 API 金鑰前會自動啟用內建的**新竹縣竹東鎮在地擬真資料與 25 道精選台灣家常食譜庫**，開箱即用！
+
+### 步驟 1：複製環境變數檔 `.env`
+```bash
+cp .env.example .env
+```
+> 若您已有 **中央氣象署 CWA API Key**、**Google Maps Places API Key** 或 **Gemini LLM API Key**，請編輯 `.env` 填入；若暫不填寫，系統會自動使用內建擬真資料與竹東在地高評價餐廳庫運作。
+
+### 步驟 2：啟動儀表板伺服器
+```bash
+python3 app.py
+```
+
+### 步驟 3：開啟瀏覽器瀏覽
+打開瀏覽器前往：
+👉 **`http://localhost:8000`**
+
+---
+
+## 三、 核心模組與排程規格說明
+
+| 模組名稱 | 自動排程時間 (Cron Job) | 核心功能特色 |
+| :--- | :--- | :--- |
+| **模組 1：中央氣象署 (CWA) 天氣預報** | 每日 `06:00` 自動更新（亦提供手動重新整理按鈕） | • 預設地點為**新竹縣竹東鎮**，支援下拉選單隨時切換全台各縣市鄉鎮區（同步存入 `LocalStorage` 與 `SQLite`）。<br>• **每小時預報（未來 36 小時）**與**每週預報（未來 7 天）**一鍵切換，完整顯示氣溫（°C）、降雨機率/降雨量（mm）、風速（m/s & 級數）/風向。 |
+| **模組 2：住家周邊外食三選一** | • `06:00` 更新**早餐**<br>• `10:00` 更新**午餐**<br>• `16:00` 更新**晚餐** | • 根據住家座標（預設新竹縣竹東鎮 `24.7376, 121.0887`，可於設定頁微調半徑與經緯度），篩選**營業中、評價 4.0 星以上**餐廳，隨機挑選不重複 3 間。<br>• 顯示店名、評分、距離、營業時段，並附上**一鍵開啟 Google Maps 導航**按鈕。 |
+| **模組 3：每兩小時自煮正餐推薦與歷史紀錄** | • 每日 `06:00` 起每 2 小時 (`06:00`, `08:00`...`22:00`) 自動生成新一輪<br>• 每日 `00:00` / `05:59` 自動清空前日紀錄 | • 每輪生成 **5 道台灣家常下飯正餐**（確保連續兩輪不重複）。<br>• 點擊任一料理彈出**詳細食譜視窗**：含預估烹飪時間、**預設 2 人份**、**精確食材與調味料克數/匙數**、條列式步驟與**主廚火候小撇步**。<br>• 內建「**今日歷史紀錄時間軸**」分頁，保留當天所有時段推薦過的菜色，隔日自動清空保持資料庫輕量。 |
+
+---
+
+## 四、 如何新增未來的生活模組（如：高鐵時刻表、待辦清單、採買清單）
+
+1. **後端**：在 `backend/modules/<your_module>/service.py` 繼承 `BaseModule`，實作 `on_cron_tick(now_dt)` 後於 `app.py` 呼叫 `registry.register(your_module)`。
+2. **前端**：在 `frontend/js/widgets/<yourWidget>.js` 定義 `slotSelector: "#widget-slot-extensions"` 與 `mount(container)`，並於 `frontend/js/main.js` 呼叫 `widgetRegistry.register(YourWidget)` 即可自動掛載。

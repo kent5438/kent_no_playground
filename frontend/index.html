@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>個人每日生活與飲食儀表板 | Personal Daily Life & Meal Dashboard</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <!-- 頂部導覽與系統狀態列 -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">🌿</div>
+        <div>
+          <h1 class="brand-title">個人每日生活與飲食儀表板</h1>
+          <p class="brand-subtitle">Personal Daily Life &amp; Meal Dashboard • 模組化插件架構</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="live-clock" id="live-clock">
+          <span class="clock-dot"></span>
+          <span id="clock-text">載入時間中...</span>
+        </div>
+        <button class="btn btn-outline" id="btn-open-plugin-modal" title="檢視或擴充生活模組">
+          <span>🧩 模組管理 (<span id="plugin-count">3</span>)</span>
+        </button>
+        <button class="btn btn-primary" id="btn-open-settings" title="設定預設地點、住家座標與搜尋半徑">
+          <span>⚙️ 地點與座標設定</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 儀表板主容器 -->
+  <main class="container dashboard-layout">
+    <!-- 上方全寬區域：模組 1（中央氣象署 CWA 天氣預報） -->
+    <section id="widget-slot-top" class="widget-slot-top" aria-label="氣象資訊區"></section>
+
+    <!-- 下方雙欄區域：左側「今日三餐外食推薦」，右側「每兩小時自煮正餐推薦 + 今日歷史紀錄切換」 -->
+    <section class="widget-grid-bottom">
+      <div id="widget-slot-left" class="widget-slot-left" aria-label="今日三餐外食推薦"></div>
+      <div id="widget-slot-right" class="widget-slot-right" aria-label="最新自煮正餐推薦與歷史紀錄"></div>
+    </section>
+
+    <!-- 預留未來擴充模組插槽 (如高鐵時刻表、待辦清單、採買清單) -->
+    <section id="widget-slot-extensions" class="widget-slot-extensions hidden" aria-label="擴充生活模組區"></section>
+  </main>
+
+  <!-- 詳細食譜彈出視窗 (Modal) -->
+  <div id="recipe-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="recipe-modal-title">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div>
+          <span class="badge badge-accent" id="recipe-modal-category">家常正餐</span>
+          <h2 id="recipe-modal-title" class="modal-title">料理名稱</h2>
+          <p id="recipe-modal-subtitle" class="modal-subtitle"></p>
+        </div>
+        <button class="btn-icon" id="btn-close-recipe-modal" aria-label="關閉視窗">✕</button>
+      </div>
+      <div class="modal-body" id="recipe-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 地點與住家座標設定彈出視窗 (Modal) -->
+  <div id="settings-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <span class="badge badge-info">全域偏好與座標設定</span>
+          <h2 id="settings-modal-title" class="modal-title">地點、住家座標與搜尋半徑</h2>
+          <p class="modal-subtitle">同步儲存於 LocalStorage 與 SQLite 資料庫</p>
+        </div>
+        <button class="btn-icon" id="btn-close-settings-modal" aria-label="關閉設定">✕</button>
+      </div>
+      <form id="settings-form" class="modal-body settings-form">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="setting-county">縣市 (CWA 氣象預報地點)</label>
+            <select id="setting-county" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label for="setting-town">鄉鎮市區</label>
+            <select id="setting-town" class="form-control" required></select>
+          </div>
+        </div>
+
+        <div class="form-hint-box">
+          💡 切換上方縣市鄉鎮時，會自動帶入該區中心座標；您也可以在下方微調精確的住家經緯度與外食搜尋半徑。
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="setting-lat">住家緯度 (Latitude)</label>
+            <input type="number" step="0.0001" id="setting-lat" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label for="setting-lng">住家經度 (Longitude)</label>
+            <input type="number" step="0.0001" id="setting-lng" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label for="setting-radius">外食搜尋半徑 (公尺)</label>
+            <input type="number" step="100" min="300" max="15000" id="setting-radius" class="form-control" required />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-reset-zhudong">📍 重設為新竹縣竹東鎮預設值</button>
+          <button type="submit" class="btn btn-primary">💾 儲存並更新儀表板</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 模組架構與擴充預覽彈出視窗 (Plugin Manager Modal) -->
+  <div id="plugin-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="plugin-modal-title">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div>
+          <span class="badge badge-success">Widget / Plugin 架構</span>
+          <h2 id="plugin-modal-title" class="modal-title">模組化服務與未來擴充插槽</h2>
+          <p class="modal-subtitle">每個模組皆擁有獨立後端 Service、排程 Hook 與前端 UI Card Widget</p>
+        </div>
+        <button class="btn-icon" id="btn-close-plugin-modal" aria-label="關閉模組管理">✕</button>
+      </div>
+      <div class="modal-body" id="plugin-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 輕量通知 Toast -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
