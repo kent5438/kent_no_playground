@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    container_name: kent-no-playground
+    restart: unless-stopped
+
+    ports:
+      - "8501:8000"
+
+    environment:
+      - PYTHONUNBUFFERED=1
