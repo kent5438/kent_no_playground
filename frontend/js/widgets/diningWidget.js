@@ -94,13 +94,24 @@ export const DiningWidget = {
 
           <div class="dining-schedule-bar">
             <span>⏰ 排程更新時間：每日 <strong>${periodObj.scheduled_time}</strong> 自動觸發</span>
-            <span class="badge badge-success">篩選條件：營業中 • 評價 4.0★ 以上</span>
+            <span class="badge badge-success">📏 嚴格篩選：半徑 ${loc.radius} 公尺內</span>
           </div>
 
           <div class="dining-cards-list">
-            ${places
-              .map(
-                (place, idx) => `
+            ${
+              places.length === 0
+                ? `
+              <div class="shopping-empty-state">
+                <div style="font-size: 1.8rem; margin-bottom: 6px;">📍</div>
+                <strong>目前設定半徑 ${loc.radius} 公尺內找不到符合條件的餐廳</strong>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+                  請點擊右上角「⚙️ 地點與座標設定」調大外食搜尋半徑（例如 1000 ~ 2500 公尺），或直接前往 Google Maps 探索周邊。
+                </p>
+              </div>
+            `
+                : places
+                    .map(
+                      (place, idx) => `
               <div class="place-card">
                 <div class="place-card-top">
                   <div>
@@ -109,9 +120,13 @@ export const DiningWidget = {
                     </div>
                     <div class="place-category">${place.category || "在地人氣餐廳"}</div>
                   </div>
-                  <span class="place-rating-badge" title="Google Maps 評價 ${place.rating} 顆星 (${place.reviews} 則評論)">
-                    ★ ${place.rating.toFixed(1)} (${place.reviews})
-                  </span>
+                  ${
+                    place.rating != null
+                      ? `<span class="place-rating-badge" title="評價 ${place.rating} 顆星 (${place.reviews || 0} 則評論)">
+                          ★ ${Number(place.rating).toFixed(1)} (${place.reviews || 0})
+                        </span>`
+                      : `<span class="badge badge-info">📍 真實地圖店家</span>`
+                  }
                 </div>
 
                 <div class="place-meta-row">
@@ -123,14 +138,24 @@ export const DiningWidget = {
 
                 <div class="place-card-actions">
                   <span class="place-address">📍 ${place.address}</span>
-                  <a href="${place.maps_url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
-                    🗺️ Google Maps 導航
-                  </a>
+                  <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    ${
+                      place.maps_search_url
+                        ? `<a href="${place.maps_search_url}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" title="在 Google Maps 查看此店家評價與實景">
+                            🔍 查看店家
+                          </a>`
+                        : ""
+                    }
+                    <a href="${place.maps_url}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" title="以精確座標開啟 Google Maps 導航">
+                      🗺️ 精準導航
+                    </a>
+                  </div>
                 </div>
               </div>
             `
-              )
-              .join("")}
+                    )
+                    .join("")
+            }
           </div>
         </div>
 

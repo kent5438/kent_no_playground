@@ -5,7 +5,7 @@
  * - 點擊任一道料理展開彈出視窗檢視詳細食譜（2人份、精確克數/匙數、步驟與火候小撇步）
  * - 提供「最新自煮正餐推薦」與「今日歷史紀錄時間軸」切換，以及每日 00:00 自動清空前日紀錄
  */
-import { showToast } from "../core/widgetRegistry.js";
+import { showToast, widgetRegistry } from "../core/widgetRegistry.js";
 
 let currentContainer = null;
 let recipesData = null;
@@ -122,7 +122,15 @@ export const RecipesWidget = {
             </div>
           </div>
 
-          <div class="recipe-item-right">
+          <div class="recipe-item-right" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end;">
+            <button
+              type="button"
+              class="btn btn-outline btn-sm btn-quick-import-recipe"
+              data-quick-import-recipe='${encodeURIComponent(JSON.stringify(recipe))}'
+              title="一鍵將此料理所需食材匯入下方智慧採買清單"
+            >
+              🛒 匯入食材
+            </button>
             <span class="btn btn-outline btn-sm">📖 詳細食譜 →</span>
           </div>
         </div>
@@ -227,6 +235,17 @@ export const RecipesWidget = {
       });
     }
 
+    // 點擊卡片上的「🛒 匯入食材」按鈕一鍵匯入採買清單
+    currentContainer.querySelectorAll("[data-quick-import-recipe]").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const raw = btn.getAttribute("data-quick-import-recipe");
+        if (!raw) return;
+        const recipe = JSON.parse(decodeURIComponent(raw));
+        await this.importRecipeToShoppingList(recipe, false);
+      });
+    });
+
     // 點擊任一料理卡片開啟詳細食譜 Modal
     currentContainer.querySelectorAll("[data-recipe-json]").forEach((card) => {
       card.addEventListener("click", () => {
@@ -236,6 +255,47 @@ export const RecipesWidget = {
         this.openRecipeModal(recipe);
       });
     });
+  },
+
+  async importRecipeToShoppingList(recipe, includeSeasonings = false, customLocation = null) {
+    const loc = customLocation || localStorage.getItem("pref_shopping_location") || "全聯";
+    const res = await fetch("/api/modules/shopping/import-recipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recipe_title: recipe.title,
+        ingredients: recipe.ingredients || [],
+        include_seasonings: includeSeasonings,
+        seasonings: recipe.seasonings || [],
+        location: loc,
+        urgency: "urgent",
+      }),
+    });
+    const json = await res.json();
+    if (json.ok) {
+      await widgetRegistry.refreshWidget("shopping");
+      showToast(`🛒 已將「${recipe.title}」共 ${json.imported.imported_count} 項食材匯入採買清單 (@ ${loc})！`);
+    }
+  },
+
+  async importSingleIngredientToShoppingList(name, amount, recipeTitle, customLocation = null) {
+    const loc = customLocation || localStorage.getItem("pref_shopping_location") || "全聯";
+    const res = await fetch("/api/modules/shopping/import-recipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recipe_title: recipeTitle,
+        ingredients: [{ name, amount }],
+        include_seasonings: false,
+        location: loc,
+        urgency: "urgent",
+      }),
+    });
+    const json = await res.json();
+    if (json.ok) {
+      await widgetRegistry.refreshWidget("shopping");
+      showToast(`🛒 已將「${name}」加入採買清單 (@ ${loc})！`);
+    }
   },
 
   initModalHandlers() {
@@ -257,12 +317,52 @@ export const RecipesWidget = {
     document.getElementById("recipe-modal-title").textContent = recipe.title;
     document.getElementById("recipe-modal-subtitle").textContent = recipe.subtitle || "";
 
+    const defaultLoc = localStorage.getItem("pref_shopping_location") || "全聯";
+
     const ingredientsHtml = (recipe.ingredients || [])
-      .map((i) => `<div class="ing-row"><span>${i.name}</span><span class="ing-amount">${i.amount}</span></div>`)
+      .map(
+        (i) => `
+        <div class="ing-row">
+          <span>${i.name}</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="ing-amount">${i.amount}</span>
+            <button
+              type="button"
+              class="btn btn-outline btn-sm"
+              style="padding: 2px 7px; font-size: 0.72rem;"
+              data-single-ing-name="${encodeURIComponent(i.name)}"
+              data-single-ing-amt="${encodeURIComponent(i.amount)}"
+              title="單獨將此項食材加入採買清單"
+            >
+              +採買
+            </button>
+          </div>
+        </div>
+      `
+      )
       .join("");
 
     const seasoningsHtml = (recipe.seasonings || [])
-      .map((s) => `<div class="ing-row"><span>${s.name}</span><span class="ing-amount">${s.amount}</span></div>`)
+      .map(
+        (s) => `
+        <div class="ing-row">
+          <span>${s.name}</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="ing-amount">${s.amount}</span>
+            <button
+              type="button"
+              class="btn btn-outline btn-sm"
+              style="padding: 2px 7px; font-size: 0.72rem;"
+              data-single-ing-name="${encodeURIComponent(s.name)}"
+              data-single-ing-amt="${encodeURIComponent(s.amount)}"
+              title="單獨將此項調味料加入採買清單"
+            >
+              +採買
+            </button>
+          </div>
+        </div>
+      `
+      )
       .join("");
 
     const stepsHtml = (recipe.steps || [])
@@ -276,7 +376,8 @@ export const RecipesWidget = {
       )
       .join("");
 
-    document.getElementById("recipe-modal-body").innerHTML = `
+    const modalBody = document.getElementById("recipe-modal-body");
+    modalBody.innerHTML = `
       <div class="recipe-detail-summary">
         <div>
           <span>預估烹飪時間</span>
@@ -293,6 +394,30 @@ export const RecipesWidget = {
         <div>
           <span>每份預估熱量</span>
           <strong>🔥 ${recipe.calories_per_serving || "350 kcal"}</strong>
+        </div>
+      </div>
+
+      <!-- 一鍵匯入智慧採買清單快捷列 -->
+      <div class="recipe-import-banner">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span>🛒 <strong>一鍵匯入採買清單：</strong></span>
+          <label for="modal-recipe-import-loc" style="font-size: 0.8rem; color: var(--text-secondary);">採買地點</label>
+          <input
+            type="text"
+            id="modal-recipe-import-loc"
+            class="form-control"
+            list="shopping-locations-datalist"
+            value="${defaultLoc}"
+            style="width: 125px; padding: 4px 8px; font-size: 0.82rem;"
+          />
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary btn-sm" id="btn-modal-import-ings">
+            🥬 匯入全部食材 (${(recipe.ingredients || []).length} 項)
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-modal-import-all">
+            🧂 匯入食材 + 調味料
+          </button>
         </div>
       </div>
 
@@ -317,6 +442,33 @@ export const RecipesWidget = {
         ${recipe.fire_tips || "維持中大火快炒，起鍋前淋入少許香油即可完美上桌！"}
       </div>
     `;
+
+    // 綁定 Modal 內的一鍵匯入食材按鈕
+    const locInputEl = modalBody.querySelector("#modal-recipe-import-loc");
+    const importIngsBtn = modalBody.querySelector("#btn-modal-import-ings");
+    const importAllBtn = modalBody.querySelector("#btn-modal-import-all");
+
+    if (importIngsBtn) {
+      importIngsBtn.addEventListener("click", async () => {
+        const loc = (locInputEl?.value || "全聯").trim() || "全聯";
+        await this.importRecipeToShoppingList(recipe, false, loc);
+      });
+    }
+    if (importAllBtn) {
+      importAllBtn.addEventListener("click", async () => {
+        const loc = (locInputEl?.value || "全聯").trim() || "全聯";
+        await this.importRecipeToShoppingList(recipe, true, loc);
+      });
+    }
+
+    modalBody.querySelectorAll("[data-single-ing-name]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const loc = (locInputEl?.value || "全聯").trim() || "全聯";
+        const ingName = decodeURIComponent(btn.getAttribute("data-single-ing-name"));
+        const ingAmt = decodeURIComponent(btn.getAttribute("data-single-ing-amt"));
+        await this.importSingleIngredientToShoppingList(ingName, ingAmt, recipe.title, loc);
+      });
+    });
 
     modal.classList.remove("hidden");
   },

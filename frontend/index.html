@@ -19,12 +19,15 @@
       </div>
 
       <div class="topbar-actions">
+        <div class="lan-connect-pill" id="lan-connect-badge" title="Host 已綁定為 0.0.0.0，手機或同區網裝置可直接連線">
+          <span>📱 區網連線：<strong id="lan-url-text">0.0.0.0:8000</strong></span>
+        </div>
         <div class="live-clock" id="live-clock">
           <span class="clock-dot"></span>
           <span id="clock-text">載入時間中...</span>
         </div>
         <button class="btn btn-outline" id="btn-open-plugin-modal" title="檢視或擴充生活模組">
-          <span>🧩 模組管理 (<span id="plugin-count">3</span>)</span>
+          <span>🧩 模組管理 (<span id="plugin-count">4</span>)</span>
         </button>
         <button class="btn btn-primary" id="btn-open-settings" title="設定預設地點、住家座標與搜尋半徑">
           <span>⚙️ 地點與座標設定</span>
@@ -44,8 +47,8 @@
       <div id="widget-slot-right" class="widget-slot-right" aria-label="最新自煮正餐推薦與歷史紀錄"></div>
     </section>
 
-    <!-- 預留未來擴充模組插槽 (如高鐵時刻表、待辦清單、採買清單) -->
-    <section id="widget-slot-extensions" class="widget-slot-extensions hidden" aria-label="擴充生活模組區"></section>
+    <!-- 擴充生活模組插槽：模組 4（全方位智慧採買清單模組）與未來擴充模組 -->
+    <section id="widget-slot-extensions" class="widget-slot-extensions" aria-label="擴充生活模組區"></section>
   </main>
 
   <!-- 詳細食譜彈出視窗 (Modal) -->

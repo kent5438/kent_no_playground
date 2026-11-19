@@ -9,11 +9,13 @@ import { widgetRegistry, showToast } from "./core/widgetRegistry.js";
 import { WeatherWidget } from "./widgets/weatherWidget.js";
 import { DiningWidget } from "./widgets/diningWidget.js";
 import { RecipesWidget } from "./widgets/recipesWidget.js";
+import { ShoppingWidget } from "./widgets/shoppingWidget.js";
 
-// 註冊三大核心生活模組
+// 註冊四大核心與擴充生活模組
 widgetRegistry.register(WeatherWidget);
 widgetRegistry.register(DiningWidget);
 widgetRegistry.register(RecipesWidget);
+widgetRegistry.register(ShoppingWidget);
 
 let globalContext = {
   settings: null,
@@ -35,6 +37,18 @@ async function fetchInitialContext() {
   globalContext.settings = settingsData.settings;
   globalContext.locations = settingsData.locations;
   globalContext.systemStatus = statusData;
+
+  const pluginCountEl = document.getElementById("plugin-count");
+  if (pluginCountEl) {
+    pluginCountEl.textContent = String(widgetRegistry.listWidgets().length);
+  }
+
+  const lanUrlEl = document.getElementById("lan-url-text");
+  if (lanUrlEl && statusData?.network) {
+    const net = statusData.network;
+    const primaryLanUrl = (net.lan_urls && net.lan_urls[0]) || net.bind_url || `http://0.0.0.0:${net.port || 8000}`;
+    lanUrlEl.textContent = primaryLanUrl.replace(/^http:\/\//, "");
+  }
 
   // 若 LocalStorage 尚無紀錄，寫入預設值（新竹縣竹東鎮）
   if (!localStorage.getItem("pref_county")) {
@@ -175,8 +189,17 @@ function initPluginModal() {
   openBtn.addEventListener("click", () => {
     const activeWidgets = widgetRegistry.listWidgets();
     const apiStatus = globalContext.systemStatus?.api_keys_configured || {};
+    const netInfo = globalContext.systemStatus?.network || {};
+    const lanUrlsHtml = (netInfo.lan_urls || []).length
+      ? netInfo.lan_urls.map((u) => `<code>${u}</code>`).join(" 、 ")
+      : `<code>${netInfo.bind_url || "http://0.0.0.0:8000"}</code>`;
 
     bodyEl.innerHTML = `
+      <div class="form-hint-box" style="margin-bottom: 16px;">
+        🌐 <strong>網路綁定狀態：</strong>Host 已綁定為 <code>${netInfo.host || "0.0.0.0"}:${netInfo.port || 8000}</code><br/>
+        📱 <strong>區網跨裝置連線網址（手機/平板同網路直接開啟）：</strong>${lanUrlsHtml}
+      </div>
+
       <div style="margin-bottom: 18px;">
         <h4 style="margin-bottom: 8px; font-size: 0.95rem;">🔑 外部 API 金鑰連線狀態 (.env)</h4>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">

@@ -80,6 +80,50 @@ def init_db():
             )
         """)
 
+        # Module 4: Smart Shopping List (待買清單)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS shopping_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                quantity_note TEXT NOT NULL DEFAULT '',
+                category TEXT NOT NULL,
+                auto_categorized INTEGER NOT NULL DEFAULT 1,
+                location TEXT NOT NULL DEFAULT '全聯',
+                urgency TEXT NOT NULL DEFAULT 'normal',
+                urgency_rank INTEGER NOT NULL DEFAULT 2,
+                source_recipe TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        """)
+
+        # Module 4: Smart Shopping History (已購買歸檔與歷史紀錄)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS shopping_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                quantity_note TEXT NOT NULL DEFAULT '',
+                category TEXT NOT NULL,
+                location TEXT NOT NULL DEFAULT '全聯',
+                urgency TEXT NOT NULL DEFAULT 'normal',
+                price REAL,
+                purchased_date TEXT NOT NULL,
+                purchased_at TEXT NOT NULL
+            )
+        """)
+
+        # Module 4: Custom & Remembered Shopping Locations (自訂地點清單與記憶功能)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS shopping_locations (
+                name TEXT PRIMARY KEY,
+                is_online INTEGER NOT NULL DEFAULT 0,
+                search_url_template TEXT NOT NULL DEFAULT '',
+                is_pinned INTEGER NOT NULL DEFAULT 1,
+                usage_count INTEGER NOT NULL DEFAULT 1,
+                last_used_at TEXT NOT NULL
+            )
+        """)
+
         # Initialize default settings if missing
         now = datetime.now().isoformat()
         defaults = {

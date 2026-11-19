@@ -15,18 +15,20 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 
-from backend.core.config import Config
+from backend.core.config import Config, get_lan_ips
 from backend.core.database import init_db, get_settings, update_settings, cleanup_previous_days
 from backend.core.module_registry import registry
 from backend.core.scheduler import scheduler
 from backend.modules.weather.service import weather_module
 from backend.modules.dining.service import dining_module
 from backend.modules.recipes.service import recipes_module
+from backend.modules.shopping.service import shopping_module
 
-# 註冊三大核心生活模組（未來若新增高鐵時刻表、待辦清單、採買清單等模組，僅需在此處 registry.register(...)）
+# 註冊四大核心與擴充生活模組
 registry.register(weather_module)
 registry.register(dining_module)
 registry.register(recipes_module)
+registry.register(shopping_module)
 
 
 class DashboardRequestHandler(BaseHTTPRequestHandler):
@@ -65,10 +67,19 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
 
         # 1. 系統與插件架構資訊 API
         if path == "/api/system/status":
+            lan_ips = get_lan_ips()
+            port = Config.PORT
             self._send_json({
                 "status": "ok",
                 "server_time": datetime.now().isoformat(),
                 "scheduler_last_tick": scheduler.last_tick,
+                "network": {
+                    "host": Config.HOST,
+                    "port": port,
+                    "bind_url": f"http://{Config.HOST}:{port}",
+                    "lan_ips": lan_ips,
+                    "lan_urls": [f"http://{ip}:{port}" for ip in lan_ips],
+                },
                 "api_keys_configured": {
                     "cwa": Config.has_valid_key(Config.CWA_API_KEY),
                     "google_maps": Config.has_valid_key(Config.GOOGLE_MAPS_API_KEY),
@@ -108,6 +119,19 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             refresh = query.get("refresh", ["false"])[0].lower() == "true"
             data = recipes_module.get_dashboard_data(force_generate_new=refresh)
             self._send_json(data)
+            return
+
+        # 6. 模組 4：全方位智慧採買清單模組 API
+        if path == "/api/modules/shopping":
+            q = query.get("q", [""])[0]
+            data = shopping_module.get_dashboard_data(history_query=q)
+            self._send_json(data)
+            return
+
+        if path == "/api/modules/shopping/classify":
+            name = query.get("name", [""])[0]
+            res = shopping_module.classify_category(name, use_llm=True)
+            self._send_json(res)
             return
 
         # 靜態前端檔案服務
@@ -152,6 +176,109 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             self._send_json({"cleanup": res, "data": data})
             return
 
+        # 模組 4：新增採買品項
+        if path == "/api/modules/shopping/items":
+            name = (body.get("name") or "").strip()
+            if not name:
+                self._send_json({"ok": False, "error": "請輸入品項名稱"}, status=400)
+                return
+            added = shopping_module.add_item(
+                name=name,
+                quantity_note=body.get("quantity_note", ""),
+                category=body.get("category"),
+                location=body.get("location", "全聯"),
+                urgency=body.get("urgency", "normal"),
+                source_recipe=body.get("source_recipe", ""),
+            )
+            data = shopping_module.get_dashboard_data(history_query=body.get("history_query", ""))
+            self._send_json({"ok": True, "added": added, "data": data})
+            return
+
+        # 模組 4：更新待買品項（修改分類、地點、急迫性、名稱或備註）
+        if path == "/api/modules/shopping/items/update":
+            item_id = int(body.get("id", 0))
+            res = shopping_module.update_item(item_id, body)
+            data = shopping_module.get_dashboard_data(history_query=body.get("history_query", ""))
+            self._send_json({"ok": res.get("ok", False), "result": res, "data": data})
+            return
+
+        # 模組 4：勾選「已購買」歸檔至歷史紀錄
+        if path == "/api/modules/shopping/items/complete":
+            item_id = int(body.get("id", 0))
+            price = body.get("price")
+            res = shopping_module.complete_item(item_id, price=price)
+            data = shopping_module.get_dashboard_data(history_query=body.get("history_query", ""))
+            self._send_json({"ok": res.get("ok", False), "completed": res, "data": data})
+            return
+
+        # 模組 4：刪除待買品項
+        if path == "/api/modules/shopping/items/delete":
+            item_id = int(body.get("id", 0))
+            res = shopping_module.delete_item(item_id)
+            data = shopping_module.get_dashboard_data(history_query=body.get("history_query", ""))
+            self._send_json({"ok": res.get("ok", False), "data": data})
+            return
+
+        # 模組 4：從自煮食譜一鍵匯入食材
+        if path == "/api/modules/shopping/import-recipe":
+            res = shopping_module.import_from_recipe(
+                recipe_title=body.get("recipe_title", ""),
+                ingredients=body.get("ingredients", []),
+                include_seasonings=bool(body.get("include_seasonings", False)),
+                seasonings=body.get("seasonings", []),
+                location=body.get("location", "全聯"),
+                urgency=body.get("urgency", "urgent"),
+            )
+            data = shopping_module.get_dashboard_data(history_query=body.get("history_query", ""))
+            self._send_json({"ok": True, "imported": res, "data": data})
+            return
+
+        # 模組 4：從歷史紀錄「🔄 再次購買」
+        if path == "/api/modules/shopping/history/repurchase":
+            history_id = int(body.get("history_id", 0))
+            urgency = body.get("urgency")
+            res = shopping_module.repurchase_from_history(history_id, urgency=urgency)
+            data = shopping_module.get_dashboard_data(history_query=body.get("history_query", ""))
+            self._send_json({"ok": res.get("ok", False), "repurchased": res, "data": data})
+            return
+
+        # 模組 4：更新歷史紀錄購入金額
+        if path == "/api/modules/shopping/history/price":
+            history_id = int(body.get("history_id", 0))
+            price = body.get("price")
+            res = shopping_module.update_history_price(history_id, price)
+            data = shopping_module.get_dashboard_data(history_query=body.get("history_query", ""))
+            self._send_json({"ok": res.get("ok", False), "result": res, "data": data})
+            return
+
+        # 模組 4：刪除單筆歷史紀錄
+        if path == "/api/modules/shopping/history/delete":
+            history_id = int(body.get("history_id", 0))
+            res = shopping_module.delete_history_item(history_id)
+            data = shopping_module.get_dashboard_data(history_query=body.get("history_query", ""))
+            self._send_json({"ok": res.get("ok", False), "data": data})
+            return
+
+        # 模組 4：管理常用地點清單（新增 / 釘選切換 / 刪除記憶地點）
+        if path == "/api/modules/shopping/locations":
+            action = body.get("action", "add")
+            loc_name = (body.get("name") or "").strip()
+            res = {"ok": False}
+            if action == "add" and loc_name:
+                res = shopping_module.remember_location(
+                    loc_name,
+                    is_pinned=True,
+                    custom_url=(body.get("search_url_template") or "").strip(),
+                )
+                res["ok"] = True
+            elif action == "delete" and loc_name:
+                res = shopping_module.delete_location(loc_name)
+            elif action == "toggle_pin" and loc_name:
+                res = shopping_module.toggle_pin_location(loc_name)
+            data = shopping_module.get_dashboard_data(history_query=body.get("history_query", ""))
+            self._send_json({"ok": True, "location_result": res, "data": data})
+            return
+
         self._send_json({"error": "Not found"}, status=404)
 
     def _serve_static(self, req_path: str):
@@ -182,16 +309,26 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
 
-def run_server(port: int = None):
+def run_server(port: int = None, host: str = None):
     init_db()
     scheduler.start()
+    host = host or Config.HOST  # 一律綁定為 0.0.0.0
     port = port or Config.PORT
-    server = HTTPServer(("0.0.0.0", port), DashboardRequestHandler)
-    print("=" * 68)
+    lan_ips = get_lan_ips()
+    server = HTTPServer((host, port), DashboardRequestHandler)
+    print("=" * 72)
     print(" 🌿 個人每日生活與飲食儀表板 (Personal Daily Life & Meal Dashboard)")
-    print(f" 🚀 伺服器已啟動： http://localhost:{port}")
+    print(f" 🌐 網路綁定設定： Host 已綁定為 {host}:{port} (已開放區網跨裝置連線)")
+    print(f" 💻 本機瀏覽網址： http://0.0.0.0:{port}")
+    if lan_ips:
+        print(" 📱 區網連線提示（手機 / 平板 / 同網路下其他裝置請直接開啟以下網址）：")
+        for ip in lan_ips:
+            print(f"    👉 http://{ip}:{port}")
+    else:
+        print(f" 📱 區網連線提示：請使用本機區網 IP 連線 http://<您的區網IP>:{port}")
     print(" 📦 已載入模組：", ", ".join([m["name"] for m in registry.list_metadata()]))
-    print("=" * 68)
+    print("=" * 72)
+    sys.stdout.flush()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
