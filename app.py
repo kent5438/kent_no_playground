@@ -121,6 +121,13 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             self._send_json(data)
             return
 
+        # 模組 3：查詢永久保存的我的最愛食譜清單
+        if path == "/api/modules/recipes/favorites":
+            q = query.get("q", [""])[0]
+            favorites = recipes_module.list_favorites(query=q)
+            self._send_json({"ok": True, "favorites": favorites, "total": len(favorites)})
+            return
+
         # 6. 模組 4：全方位智慧採買清單模組 API
         if path == "/api/modules/shopping":
             q = query.get("q", [""])[0]
@@ -174,6 +181,53 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             res = recipes_module.clear_today_history(keep_latest=keep_latest)
             data = recipes_module.get_dashboard_data(force_generate_new=False)
             self._send_json({"cleanup": res, "data": data})
+            return
+
+        # 模組 3：切換「我的最愛」永久收藏（新增或取消）
+        if path == "/api/modules/recipes/favorites/toggle":
+            recipe = body.get("recipe")
+            source_label = body.get("source_label", "")
+            res = recipes_module.toggle_favorite(recipe, source_label=source_label)
+            if not res.get("ok"):
+                self._send_json(res, status=400)
+                return
+            data = recipes_module.get_dashboard_data(force_generate_new=False)
+            self._send_json({"ok": True, "favorited": res["favorited"], "result": res, "data": data})
+            return
+
+        # 模組 3：刪除單筆「我的最愛」食譜
+        if path == "/api/modules/recipes/favorites/delete":
+            fav_id = body.get("id") or body.get("fav_id")
+            recipe_key = body.get("recipe_key")
+            res = recipes_module.delete_favorite(
+                fav_id=int(fav_id) if fav_id else None,
+                recipe_key=recipe_key,
+            )
+            data = recipes_module.get_dashboard_data(force_generate_new=False)
+            self._send_json({"ok": res.get("ok", False), "result": res, "data": data})
+            return
+
+        # 模組 3：依據使用者輸入的食材產出專屬食譜
+        if path == "/api/modules/recipes/generate-by-ingredients":
+            res = recipes_module.generate_from_ingredients(
+                ingredients_input=body.get("ingredients", ""),
+                servings=body.get("servings", "2 人份"),
+                preference=body.get("preference", ""),
+                count=int(body.get("count", 3)),
+            )
+            if not res.get("ok"):
+                self._send_json(res, status=400)
+                return
+            data = recipes_module.get_dashboard_data(force_generate_new=False)
+            self._send_json({"ok": True, "batch": res["batch"], "data": data})
+            return
+
+        # 模組 3：刪除單筆「輸入食材產出食譜」歷史批次
+        if path == "/api/modules/recipes/custom/delete":
+            batch_id = int(body.get("batch_id", 0))
+            res = recipes_module.delete_custom_batch(batch_id)
+            data = recipes_module.get_dashboard_data(force_generate_new=False)
+            self._send_json({"ok": res.get("ok", False), "result": res, "data": data})
             return
 
         # 模組 4：新增採買品項

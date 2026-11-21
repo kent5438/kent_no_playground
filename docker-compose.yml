@@ -3,9 +3,15 @@ services:
     build: .
     container_name: kent-no-playground
     restart: unless-stopped
-
     ports:
       - "8501:8000"
-
     environment:
       - PYTHONUNBUFFERED=1
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-cloudflared-1
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://web:8000
+    depends_on:
+      - web

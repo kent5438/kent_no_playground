@@ -777,6 +777,267 @@ body {
   background: #fff7ed;
 }
 
+.timeline-recipe-chip.is-favorited-chip {
+  border-color: #fda4af;
+  background: #fff1f2;
+}
+
+.timeline-chip-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.btn-chip-fav {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.92rem;
+  line-height: 1;
+  padding: 2px 3px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: transform 0.14s ease, background-color 0.14s ease;
+}
+
+.btn-chip-fav:hover {
+  background: rgba(244, 63, 94, 0.12);
+  transform: scale(1.12);
+}
+
+/* 模組 3 新增：分頁列、我的最愛與食材產食譜樣式 */
+.recipes-tab-group {
+  flex-wrap: wrap;
+}
+
+.recipe-subhint-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.recipe-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn-fav-toggle.is-favorited {
+  background: #fff1f2;
+  border-color: #fda4af;
+  color: #be123c;
+}
+
+.btn-fav-toggle.is-favorited:hover {
+  background: #ffe4e6;
+  border-color: #fb7185;
+}
+
+.recipe-item-card.is-favorited-card {
+  border-color: #fecdd3;
+}
+
+.recipe-index-circle.is-fav-circle {
+  background: #ffe4e6;
+  color: #e11d48;
+  font-size: 0.95rem;
+}
+
+.recipe-fav-meta {
+  font-size: 0.74rem;
+  color: #be123c;
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+.recipe-tag-matched {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+  font-weight: 600;
+}
+
+.recipe-fav-banner {
+  background: linear-gradient(135deg, #fff1f2 0%, #fff7ed 100%);
+  border: 1px solid #fecdd3;
+  border-radius: 12px;
+  padding: 12px 15px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.fav-search-wrap {
+  min-width: 210px;
+  flex: 0 1 260px;
+}
+
+.recipe-empty-state {
+  text-align: center;
+  padding: 28px 18px;
+  background: var(--bg-subtle);
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  color: var(--text-main);
+}
+
+/* 輸入食材產出食譜面板 */
+.recipe-ingredients-panel {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.ingredients-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.quick-ing-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.quick-ing-label {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.quick-ing-chip {
+  border: 1px solid var(--border-color);
+  background: #fff;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.quick-ing-chip:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary-hover);
+}
+
+.ingredients-options-row {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.ingredients-submit-wrap {
+  display: flex;
+  align-items: flex-end;
+}
+
+.custom-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+}
+
+.custom-result-ings {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.custom-history-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.custom-history-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.custom-history-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.custom-history-chip-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.custom-history-chip-wrap.active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.custom-history-chip-btn {
+  border: none;
+  background: transparent;
+  padding: 3px 9px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.custom-history-chip-wrap.active .custom-history-chip-btn {
+  color: var(--primary-hover);
+}
+
+.custom-history-chip-del {
+  border: none;
+  background: transparent;
+  padding: 3px 7px 3px 2px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.custom-history-chip-del:hover {
+  color: #dc2626;
+}
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* 食譜詳細彈出視窗 Modal */
 .modal-backdrop {
   position: fixed;
@@ -1626,8 +1887,19 @@ body {
   .recipe-two-cols,
   .form-row-2,
   .form-row-3,
-  .shopping-form-grid {
+  .shopping-form-grid,
+  .ingredients-options-row {
     grid-template-columns: 1fr;
+  }
+  .ingredients-submit-wrap .btn {
+    width: 100%;
+  }
+  .fav-search-wrap {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  .modal-header {
+    flex-wrap: wrap;
   }
   .recipe-detail-summary {
     grid-template-columns: 1fr 1fr;

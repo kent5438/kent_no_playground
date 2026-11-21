@@ -60,7 +60,12 @@
           <h2 id="recipe-modal-title" class="modal-title">料理名稱</h2>
           <p id="recipe-modal-subtitle" class="modal-subtitle"></p>
         </div>
-        <button class="btn-icon" id="btn-close-recipe-modal" aria-label="關閉視窗">✕</button>
+        <div class="modal-header-actions">
+          <button type="button" class="btn btn-outline btn-sm btn-fav-toggle" id="btn-modal-toggle-fav" title="將完整食譜永久收藏至我的最愛">
+            🤍 收藏至我的最愛
+          </button>
+          <button class="btn-icon" id="btn-close-recipe-modal" aria-label="關閉視窗">✕</button>
+        </div>
       </div>
       <div class="modal-body" id="recipe-modal-body"></div>
     </div>

@@ -70,6 +70,33 @@ def init_db():
             )
         """)
 
+        # Module 3: Permanent Favorite Recipes (我的最愛，永久保留，不隨隔日歷史清理刪除)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS favorite_recipes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                recipe_key TEXT UNIQUE NOT NULL,
+                title TEXT NOT NULL,
+                category TEXT NOT NULL DEFAULT '',
+                recipe_json TEXT NOT NULL,
+                source_label TEXT NOT NULL DEFAULT '',
+                saved_at TEXT NOT NULL
+            )
+        """)
+
+        # Module 3: Custom Ingredient-Based Recipe Generations (輸入食材產出食譜紀錄)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS custom_recipe_batches (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ingredients_input TEXT NOT NULL,
+                ingredients_json TEXT NOT NULL,
+                servings TEXT NOT NULL DEFAULT '2 人份',
+                preference TEXT NOT NULL DEFAULT '',
+                recipes_json TEXT NOT NULL,
+                source TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
+
         # Schedule execution log
         cur.execute("""
             CREATE TABLE IF NOT EXISTS cron_logs (
